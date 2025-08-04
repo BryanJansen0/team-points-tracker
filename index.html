@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Team Points Tracker - Cloud Edition</title>
+    <link rel="stylesheet" href="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/177e1dda53f672e8867af78d63b0d718/2603b452-9d69-49f6-86d2-fd97f417abd5/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Connecting to Cloud Database...</p>
+            <div class="cloud-status">🌤️ Initializing Supabase...</div>
+        </div>
+    </div>
+
+    <!-- Confetti container -->
+    <div id="confetti-container" class="confetti-container"></div>
+
+    <!-- Header -->
+    <header class="header glass-panel">
+        <div class="container flex flex-col items-center gap-8 py-16">
+            <h1 class="header-title">Premium Team Points Tracker</h1>
+            <p class="header-subtitle">Elite performance &amp; reward system</p>
+            <div class="cloud-sync-indicator">
+                <span id="sync-status" class="sync-status">🔄 Connecting to cloud database...</span>
+                <span id="last-sync" class="last-sync">Last updated: Loading...</span>
+            </div>
+            <div class="header-actions flex gap-8">
+                <button id="admin-login-btn" class="btn btn--outline glow">🔐 Admin Access</button>
+                <div id="admin-status" class="admin-status hidden">
+                    <span class="status-text">✅ Admin Mode Active</span>
+                    <button id="admin-logout-btn" class="btn btn--secondary btn--sm">Logout</button>
+                </div>
+            </div>
+            <div class="access-info">
+                <p class="info-text">🌐 <strong>No Installation Required!</strong> Team members can access this dashboard directly in their browser.</p>
+                <p class="info-text">👥 Everyone can view • 🔒 Admins can manage • ☁️ Real-time cloud sync</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header flex justify-between items-center">
+                <h2>Admin Authentication</h2>
+                <button id="close-modal" class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="login-info">
+                    <p>🔑 Admin credentials for team management</p>
+                </div>
+                <form id="admin-form" novalidate>
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input id="admin-username" type="text" class="form-control" placeholder="adminteam" autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input id="admin-password" type="password" class="form-control" placeholder="Enter admin password" autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn--primary btn--full-width glow">🚀 Authenticate</button>
+                </form>
+                <div class="login-hint">
+                    <p>💡 Default credentials: <code>adminteam</code> / <code>changeme2024!</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content container flex flex-col gap-32 py-32">
+        <!-- RULES SECTION -->
+        <section class="glass-panel rules-section px-16 py-32">
+            <h2 class="section-title flex items-center gap-8 mb-16">📋 Rules &amp; Achievement Matrix</h2>
+            <div class="rules-grid">
+                <!-- Improvement Criteria -->
+                <div class="criteria-panel">
+                    <h3 class="panel-title">✅ Qualifying Improvements</h3>
+                    <p class="panel-subtitle">All improvements require approval from Edgar and Bryan</p>
+                    <ul id="improvement-criteria" class="criteria-list">
+                        <li class="criteria-item">• Increases profit</li>
+                        <li class="criteria-item">• Decreases losses</li>
+                        <li class="criteria-item">• Decreases cases</li>
+                        <li class="criteria-item">• Decreases refunds</li>
+                        <li class="criteria-item">• Increases efficiency</li>
+                        <li class="criteria-item">• Increases revenue</li>
+                        <li class="criteria-item">• Decreases hours needed</li>
+                    </ul>
+                    <div class="bonus-info">
+                        <p class="bonus-text">💰 Each improvement = <strong>+250 points</strong></p>
+                    </div>
+                </div>
+                <!-- Achievement Levels -->
+                <div class="achievement-panel">
+                    <h3 class="panel-title">🏆 Performance Tiers</h3>
+                    <p class="panel-subtitle">Point System: 1000 points = 1 star ⭐</p>
+                    <ul id="achievement-levels" class="achievement-list">
+                        <li class="achievement-item">
+                            <div class="achievement-title">⭐ Welcome to the Club</div>
+                            <div class="achievement-details">Salary increase: <span class="salary-highlight">+5%</span></div>
+                        </li>
+                        <li class="achievement-item">
+                            <div class="achievement-title">⭐⭐⭐⭐⭐ Pro</div>
+                            <div class="achievement-details">Salary increase: <span class="salary-highlight">+15% additional (20% total)</span></div>
+                        </li>
+                        <li class="achievement-item">
+                            <div class="achievement-title">⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐ Elite</div>
+                            <div class="achievement-details">Salary increase: <span class="salary-highlight">+20% additional (40% total)</span></div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- LEADERBOARD -->
+        <section class="leaderboard-section">
+            <div class="section-header flex justify-between items-center mb-16">
+                <h2 class="section-title flex items-center gap-8">🌟 Performance Leaderboard</h2>
+                <div id="admin-user-controls" class="hidden">
+                    <button id="add-user-btn" class="btn btn--primary btn--sm glow">+ Add Member</button>
+                </div>
+            </div>
+            <div id="leaderboard-loading" class="loading-message hidden">
+                <div class="loading-spinner-small"></div>
+                <span>Loading team data from cloud...</span>
+            </div>
+            <div id="leaderboard-grid" class="member-grid"></div>
+        </section>
+
+        <!-- REWARDS -->
+        <section class="glass-panel rewards-section px-16 py-32">
+            <div class="section-header flex justify-between items-center mb-16">
+                <h2 class="section-title flex items-center gap-8">🎁 Available Rewards</h2>
+                <div id="admin-reward-controls" class="hidden">
+                    <button id="add-reward-btn" class="btn btn--primary btn--sm glow">+ Add Reward</button>
+                </div>
+            </div>
+            <div id="rewards-loading" class="loading-message hidden">
+                <div class="loading-spinner-small"></div>
+                <span>Loading rewards from cloud...</span>
+            </div>
+            <div id="rewards-grid" class="rewards-grid"></div>
+        </section>
+    </main>
+
+    <!-- USER MODAL -->
+    <div id="user-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header flex justify-between items-center">
+                <h2 id="user-modal-title">Add Team Member</h2>
+                <button class="modal-close" onclick="closeUserModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="user-form" novalidate>
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input id="user-name" type="text" class="form-control" placeholder="e.g. John Smith">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Profile Picture URL</label>
+                        <input id="user-profile" type="url" class="form-control" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Birthday</label>
+                        <input id="user-birthday" type="date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input id="user-start-date" type="date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Starting Points</label>
+                        <input id="user-points" type="number" class="form-control" min="0" value="0">
+                    </div>
+                    <div class="form-actions flex gap-8 mt-16">
+                        <button type="submit" class="btn btn--primary glow" id="save-user-btn">💾 Save Member</button>
+                        <button type="button" onclick="closeUserModal()" class="btn btn--outline glow">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- REWARD MODAL -->
+    <div id="reward-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <div class="modal-header flex justify-between items-center">
+                <h2 id="reward-modal-title">Add Reward</h2>
+                <button class="modal-close" onclick="closeRewardModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="reward-form" novalidate>
+                    <div class="form-group">
+                        <label class="form-label">Reward Name</label>
+                        <input id="reward-name" type="text" class="form-control" placeholder="e.g. Spa Day">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Icon (emoji)</label>
+                        <input id="reward-icon" type="text" maxlength="4" class="form-control" placeholder="🎁">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stars Required</label>
+                        <input id="reward-stars" type="number" min="1" class="form-control" placeholder="1">
+                    </div>
+                    <div class="form-actions flex gap-8 mt-16">
+                        <button type="submit" class="btn btn--primary glow" id="save-reward-btn">💾 Save Reward</button>
+                        <button type="button" onclick="closeRewardModal()" class="btn btn--outline glow">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS TOAST -->
+    <div id="success-message" class="success-toast">
+        <div class="toast-content flex items-center gap-8">
+            <span class="toast-icon">🎉</span>
+            <span id="success-text">Success!</span>
+        </div>
+    </div>
+
+    <!-- ERROR TOAST -->
+    <div id="error-message" class="error-toast">
+        <div class="toast-content flex items-center gap-8">
+            <span class="toast-icon">❌</span>
+            <span id="error-text">Error occurred!</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
